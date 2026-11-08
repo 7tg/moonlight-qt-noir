@@ -1007,9 +1007,11 @@ IFFmpegRenderer* FFmpegVideoDecoder::createHwAccelRenderer(const AVCodecHWConfig
 #endif
 #ifdef Q_OS_DARWIN
         case AV_HWDEVICE_TYPE_VIDEOTOOLBOX:
-            // Prefer the libplacebo (on MoltenVK) renderer unless explicitly opted out
+            // Prefer the libplacebo (on MoltenVK) renderer unless explicitly opted out, or
+            // unless MetalFX upscaling is on (only the Metal renderer has it)
 #ifdef HAVE_LIBPLACEBO_VULKAN
-            if (params->renderer == StreamingPreferences::RS_AUTO || params->renderer == StreamingPreferences::RS_VULKAN) {
+            if ((params->renderer == StreamingPreferences::RS_AUTO && !StreamingPreferences::get()->metalFxUpscaling) ||
+                    params->renderer == StreamingPreferences::RS_VULKAN) {
                 return new PlVkRenderer(hwDecodeCfg->device_type);
             }
 #endif
