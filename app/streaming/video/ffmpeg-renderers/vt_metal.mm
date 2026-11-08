@@ -89,6 +89,8 @@ public:
           m_FxOut(nullptr),
           m_FxVideoPipelineState(nullptr),
           m_FxBlitPipelineState(nullptr),
+          m_FxSharpenPipelineState(nullptr),
+          m_FxSharpness(0),
           m_FullscreenVertexBuffer(nullptr)
     {
     }
@@ -122,6 +124,7 @@ public:
         [m_FxOut release];
         [m_FxVideoPipelineState release];
         [m_FxBlitPipelineState release];
+        [m_FxSharpenPipelineState release];
         [m_FullscreenVertexBuffer release];
 
         for (int i = 0; i < Overlay::OverlayMax; i++) {
@@ -356,6 +359,8 @@ public:
         m_FxVideoPipelineState = nullptr;
         [m_FxBlitPipelineState release];
         m_FxBlitPipelineState = nullptr;
+        [m_FxSharpenPipelineState release];
+        m_FxSharpenPipelineState = nullptr;
         if (m_MetalFxEnabled) {
             pipelineDesc = [[MTLRenderPipelineDescriptor new] autorelease];
             pipelineDesc.vertexFunction = [[m_ShaderLibrary newFunctionWithName:@"vs_draw"] autorelease];
@@ -368,6 +373,13 @@ public:
             pipelineDesc.fragmentFunction = [[m_ShaderLibrary newFunctionWithName:@"ps_draw_rgb"] autorelease];
             pipelineDesc.colorAttachments[0].pixelFormat = m_MetalLayer.pixelFormat;
             m_FxBlitPipelineState = [m_MetalLayer.device newRenderPipelineStateWithDescriptor:pipelineDesc error:nullptr];
+
+            pipelineDesc.fragmentFunction = [[m_ShaderLibrary newFunctionWithName:@"ps_draw_rcas"] autorelease];
+            m_FxSharpenPipelineState = [m_MetalLayer.device newRenderPipelineStateWithDescriptor:pipelineDesc error:nullptr];
+
+            // Slider 0-100 % -> RCAS 0 (off) or exp2(-stops) with stops 2..0
+            int pct = std::clamp(StreamingPreferences::get()->metalFxSharpness, 0, 100);
+            m_FxSharpness = pct == 0 ? 0.0f : exp2f(-2.0f * (1.0f - pct / 100.0f));
 
             // Recreate the scaler and textures for the new formats on next use
             [m_FxScaler release];
@@ -455,8 +467,8 @@ public:
             m_FullscreenVertexBuffer = [device newBufferWithBytes:verts length:sizeof(verts) options:MTLResourceStorageModeShared];
         }
 
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "MetalFX spatial upscaling: %dx%d -> %dx%d",
-                    frame->width, frame->height, m_VideoDstWidth, m_VideoDstHeight);
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "MetalFX spatial upscaling: %dx%d -> %dx%d, RCAS sharpness %.2f",
+                    frame->width, frame->height, m_VideoDstWidth, m_VideoDstHeight, m_FxSharpness);
         return m_FxIn && m_FxOut;
     }
 
@@ -667,7 +679,13 @@ public:
             renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
             renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
             renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
-            [renderEncoder setRenderPipelineState:m_FxBlitPipelineState];
+            if (m_FxSharpness > 0 && m_FxSharpenPipelineState) {
+                [renderEncoder setRenderPipelineState:m_FxSharpenPipelineState];
+                [renderEncoder setFragmentBytes:&m_FxSharpness length:sizeof(m_FxSharpness) atIndex:0];
+            }
+            else {
+                [renderEncoder setRenderPipelineState:m_FxBlitPipelineState];
+            }
             [renderEncoder setFragmentTexture:m_FxOut atIndex:0];
             [renderEncoder setVertexBuffer:m_VideoVertexBuffer offset:0 atIndex:0];
             [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
@@ -1125,6 +1143,8 @@ private:
     id<MTLTexture> m_FxOut;
     id<MTLRenderPipelineState> m_FxVideoPipelineState;
     id<MTLRenderPipelineState> m_FxBlitPipelineState;
+    id<MTLRenderPipelineState> m_FxSharpenPipelineState;
+    float m_FxSharpness;
     id<MTLBuffer> m_FullscreenVertexBuffer;
 };
 

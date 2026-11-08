@@ -135,6 +135,7 @@ public:
     Q_PROPERTY(bool absoluteTouchMode MEMBER absoluteTouchMode NOTIFY absoluteTouchModeChanged)
     Q_PROPERTY(bool framePacing MEMBER framePacing NOTIFY framePacingChanged)
     Q_PROPERTY(bool metalFxUpscaling MEMBER metalFxUpscaling NOTIFY metalFxUpscalingChanged)
+    Q_PROPERTY(int metalFxSharpness MEMBER metalFxSharpness NOTIFY metalFxSharpnessChanged)
     Q_PROPERTY(bool connectionWarnings MEMBER connectionWarnings NOTIFY connectionWarningsChanged)
     Q_PROPERTY(bool configurationWarnings MEMBER configurationWarnings NOTIFY configurationWarningsChanged)
     Q_PROPERTY(bool richPresence MEMBER richPresence NOTIFY richPresenceChanged)
@@ -178,6 +179,7 @@ public:
     bool absoluteTouchMode;
     bool framePacing;
     bool metalFxUpscaling;
+    int metalFxSharpness; // 0-100 %, 0 = no RCAS pass
     bool connectionWarnings;
     bool configurationWarnings;
     bool richPresence;
@@ -226,6 +228,7 @@ signals:
     void windowModeChanged();
     void framePacingChanged();
     void metalFxUpscalingChanged();
+    void metalFxSharpnessChanged();
     void connectionWarningsChanged();
     void configurationWarningsChanged();
     void richPresenceChanged();

@@ -35,6 +35,7 @@
 #define SER_STARTWINDOWED "startwindowed"
 #define SER_FRAMEPACING "framepacing"
 #define SER_METALFXUPSCALING "metalfxupscaling"
+#define SER_METALFXSHARPNESS "metalfxsharpness"
 #define SER_CONNWARNINGS "connwarnings"
 #define SER_CONFWARNINGS "confwarnings"
 #define SER_UIDISPLAYMODE "uidisplaymode"
@@ -140,6 +141,7 @@ void StreamingPreferences::reload()
     absoluteTouchMode = settings.value(SER_ABSTOUCHMODE, true).toBool();
     framePacing = settings.value(SER_FRAMEPACING, false).toBool();
     metalFxUpscaling = settings.value(SER_METALFXUPSCALING, true).toBool();
+    metalFxSharpness = settings.value(SER_METALFXSHARPNESS, 50).toInt();
     connectionWarnings = settings.value(SER_CONNWARNINGS, true).toBool();
     configurationWarnings = settings.value(SER_CONFWARNINGS, true).toBool();
     richPresence = settings.value(SER_RICHPRESENCE, true).toBool();
@@ -341,6 +343,7 @@ void StreamingPreferences::save()
     settings.setValue(SER_ABSTOUCHMODE, absoluteTouchMode);
     settings.setValue(SER_FRAMEPACING, framePacing);
     settings.setValue(SER_METALFXUPSCALING, metalFxUpscaling);
+    settings.setValue(SER_METALFXSHARPNESS, metalFxSharpness);
     settings.setValue(SER_CONNWARNINGS, connectionWarnings);
     settings.setValue(SER_CONFWARNINGS, configurationWarnings);
     settings.setValue(SER_RICHPRESENCE, richPresence);

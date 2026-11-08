@@ -866,6 +866,31 @@ Flickable {
                     ToolTip.text: qsTr("Upscale the stream to the window with Apple's MetalFX instead of bilinear filtering. Stream at a lower resolution to save bandwidth and let the Mac sharpen it.")
                 }
 
+                Label {
+                    id: metalFxSharpnessTitle
+                    width: parent.width
+                    visible: metalFxCheck.visible && StreamingPreferences.metalFxUpscaling
+                    text: qsTr("MetalFX sharpness: %1%").arg(metalFxSharpnessSlider.value)
+                    font.pointSize: 12
+                    wrapMode: Text.Wrap
+                }
+
+                Slider {
+                    id: metalFxSharpnessSlider
+                    width: Math.min(400, parent.width)
+                    visible: metalFxSharpnessTitle.visible
+                    from: 0
+                    to: 100
+                    stepSize: 5
+                    snapMode: "SnapAlways"
+                    value: StreamingPreferences.metalFxSharpness
+                    onValueChanged: StreamingPreferences.metalFxSharpness = value
+                    ToolTip.delay: 1000
+                    ToolTip.timeout: 5000
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Extra sharpening (AMD FSR RCAS) after MetalFX. 0% turns it off. Applies to the next stream.")
+                }
+
                 CheckBox {
                     id: enableHdr
                     width: parent.width
