@@ -301,6 +301,12 @@ public:
         return false;
     }
 
+    // One line for the performance overlay describing how the video is scaled to the window
+    // (e.g. "MetalFX 1280x832 -> 3420x2214, sharpness 50%"). False = nothing to show.
+    virtual bool getUpscalingInfo(char*, int) {
+        return false;
+    }
+
     virtual void prepareToRender() {
         // Allow renderers to perform any final preparations for
         // rendering after they have been selected to render. Such

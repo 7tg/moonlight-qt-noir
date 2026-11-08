@@ -91,6 +91,7 @@ public:
           m_FxBlitPipelineState(nullptr),
           m_FxSharpenPipelineState(nullptr),
           m_FxSharpness(0),
+          m_FxActive(false),
           m_FullscreenVertexBuffer(nullptr)
     {
     }
@@ -390,6 +391,31 @@ public:
         return true;
     }
 
+    virtual bool getUpscalingInfo(char* output, int length) override
+    {
+        const int srcW = m_LastFrameWidth, srcH = m_LastFrameHeight;
+        const int dstW = m_VideoDstWidth, dstH = m_VideoDstHeight;
+        if (srcW <= 0 || dstW <= 0) {
+            return false;
+        }
+        if (m_FxActive) {
+            int pct = std::clamp(StreamingPreferences::get()->metalFxSharpness, 0, 100);
+            if (m_FxSharpness > 0) {
+                snprintf(output, length, "MetalFX %dx%d -> %dx%d, sharpness %d%% (RCAS)", srcW, srcH, dstW, dstH, pct);
+            }
+            else {
+                snprintf(output, length, "MetalFX %dx%d -> %dx%d, no sharpening", srcW, srcH, dstW, dstH);
+            }
+        }
+        else if (dstW != srcW || dstH != srcH) {
+            snprintf(output, length, "Bilinear %dx%d -> %dx%d", srcW, srcH, dstW, dstH);
+        }
+        else {
+            snprintf(output, length, "None (native %dx%d)", srcW, srcH);
+        }
+        return true;
+    }
+
     MTLPixelFormat fxFormat()
     {
         // 10-bit (HDR) layers keep their precision through the upscale
@@ -626,6 +652,7 @@ public:
 
         auto commandBuffer = [m_CommandQueue commandBuffer];
         const bool metalFx = prepareMetalFx(frame);
+        m_FxActive = metalFx;
         id<MTLRenderCommandEncoder> renderEncoder;
         if (metalFx) {
             // Convert YUV->RGB at the stream's own size; MetalFX does the scaling
@@ -1145,6 +1172,7 @@ private:
     id<MTLRenderPipelineState> m_FxBlitPipelineState;
     id<MTLRenderPipelineState> m_FxSharpenPipelineState;
     float m_FxSharpness;
+    bool m_FxActive;
     id<MTLBuffer> m_FullscreenVertexBuffer;
 };
 

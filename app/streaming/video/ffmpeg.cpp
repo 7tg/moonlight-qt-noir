@@ -912,6 +912,16 @@ void FFmpegVideoDecoder::stringifyVideoStats(VIDEO_STATS& stats, char* output, i
             offset += ret;
         }
 
+        char upscaling[128];
+        if (m_FrontendRenderer && m_FrontendRenderer->getUpscalingInfo(upscaling, sizeof(upscaling))) {
+            ret = snprintf(&output[offset], length - offset, "Upscaling: %s\n", upscaling);
+            if (ret < 0 || ret >= length - offset) {
+                SDL_assert(false);
+                return;
+            }
+            offset += ret;
+        }
+
         ret = snprintf(&output[offset],
                        length - offset,
                        "Incoming frame rate from network: %.2f FPS\n"
