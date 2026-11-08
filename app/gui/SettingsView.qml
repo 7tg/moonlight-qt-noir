@@ -850,6 +850,23 @@ Flickable {
                 }
 
                 CheckBox {
+                    id: metalFxCheck
+                    width: parent.width
+                    visible: Qt.platform.os === "osx"
+                    hoverEnabled: true
+                    text: qsTr("MetalFX upscaling")
+                    font.pointSize: 12
+                    checked: StreamingPreferences.metalFxUpscaling
+                    onCheckedChanged: {
+                        StreamingPreferences.metalFxUpscaling = checked
+                    }
+                    ToolTip.delay: 1000
+                    ToolTip.timeout: 5000
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Upscale the stream to the window with Apple's MetalFX instead of bilinear filtering. Stream at a lower resolution to save bandwidth and let the Mac sharpen it.")
+                }
+
+                CheckBox {
                     id: enableHdr
                     width: parent.width
                     text: qsTr("Enable HDR")
