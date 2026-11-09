@@ -181,6 +181,9 @@ Flickable {
 
                                 addDetectedResolution(qsTr("Native"), screenRect)
                                 addDetectedResolution(qsTr("Native (Excluding Notch)"), safeAreaRect)
+                                // Half of native per axis (kept even for the encoder), for upscaled streaming
+                                addDetectedResolution(qsTr("Half Native"), {width: Math.floor(screenRect.width / 4) * 2, height: Math.floor(screenRect.height / 4) * 2})
+                                addDetectedResolution(qsTr("Half Native (Excluding Notch)"), {width: Math.floor(safeAreaRect.width / 4) * 2, height: Math.floor(safeAreaRect.height / 4) * 2})
                             }
 
                             // Prune resolutions that are over the decoder's maximum
